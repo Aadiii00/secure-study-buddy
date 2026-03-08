@@ -35,6 +35,26 @@ const ResultsPage = () => {
     credReport.attemptId = attemptId!;
     setReport(credReport);
     await supabase.from('exam_attempts').update({ credibility_score: credReport.score, risk_level: credReport.riskLevel }).eq('id', attemptId!);
+
+    // Send results email to student
+    try {
+      const { data: profileData } = await supabase.from('profiles').select('email, full_name').eq('user_id', user!.id).single();
+      if (profileData?.email) {
+        await supabase.functions.invoke('send-results-email', {
+          body: {
+            to: profileData.email,
+            studentName: profileData.full_name || 'Student',
+            examTitle: attemptData?.exams?.title || 'Exam',
+            score: attemptData?.score,
+            credibilityScore: credReport.score,
+            riskLevel: credReport.riskLevel,
+            totalViolations: credReport.totalViolations,
+          },
+        });
+      }
+    } catch (emailErr) {
+      console.error('Failed to send results email:', emailErr);
+    }
   };
 
   const exportPDF = () => {
