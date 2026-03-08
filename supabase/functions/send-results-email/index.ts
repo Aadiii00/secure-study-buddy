@@ -75,7 +75,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'ExamGuard <onboarding@resend.dev>',
+        from: 'ExamGuard <noreply@studyhubpro.in>',
         to: [to],
         subject: `Your ${examTitle} Results — Score: ${score ?? 0}%`,
         html,
