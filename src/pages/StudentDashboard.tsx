@@ -64,6 +64,9 @@ const StudentDashboard = () => {
             <span className="font-bold text-lg text-foreground">Exam Guardrail</span>
           </div>
           <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" onClick={() => navigate('/leaderboard')} className="border-border text-foreground">
+              <Medal className="w-4 h-4 mr-2" /> Leaderboard
+            </Button>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="w-4 h-4" />
               <span>{profile?.full_name || user?.email}</span>
