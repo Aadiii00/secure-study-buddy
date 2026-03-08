@@ -67,7 +67,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (error) throw error;
 
-    // If user exists but email not confirmed, identities array is empty
+    // Detect repeated signup: existing user returns empty identities array
+    if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+      throw new Error('An account with this email already exists. Please sign in instead, or use "Forgot password?" to reset your password.');
+    }
+
     const needsVerification = !data.session;
     return { needsVerification };
   };
