@@ -242,6 +242,10 @@ const AdminDashboard = () => {
                 </div>
               ))}
             </div>
+
+            {/* Charts */}
+            <h3 className="text-sm font-medium mb-3 mt-8">Analytics</h3>
+            <ViolationCharts violations={violations} attempts={attempts} />
           </div>
         )}
 
