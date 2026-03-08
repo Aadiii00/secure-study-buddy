@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useSecurityMonitor } from '@/hooks/useSecurityMonitor';
-import { useProctoring } from '@/hooks/useProctoring';
 import { supabase } from '@/integrations/supabase/client';
 import { ViolationType } from '@/types/exam';
+import { useWebcam } from '@/proctoring/useWebcam';
+import { useFaceDetection } from '@/proctoring/useFaceDetection';
+import { useProctorEvents } from '@/proctoring/useProctorEvents';
+import { captureEvidence } from '@/proctoring/evidenceCapture';
 import { AlertTriangle, Camera, Clock, ChevronLeft, ChevronRight, Send, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -15,6 +17,7 @@ const SecureExamPage = () => {
   const { examId } = useParams<{ examId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [attemptId, setAttemptId] = useState<string>('');
   const [questions, setQuestions] = useState<any[]>([]);
@@ -28,6 +31,25 @@ const SecureExamPage = () => {
   const [violationCounter, setViolationCounter] = useState(0);
   const [examReady, setExamReady] = useState(false);
 
+  // Webcam
+  const { videoRef, cameraActive, startCamera } = useWebcam();
+
+  // Face detection with 5s grace period
+  const handleFaceAnomaly = useCallback((type: 'no_face' | 'multiple_faces' | 'face_not_centered') => {
+    setViolationCounter((prev) => prev + 1);
+    const messages = { no_face: 'No face detected for 5+ seconds', multiple_faces: 'Multiple faces detected', face_not_centered: 'Face not centered' };
+    setWarningMessage(`⚠️ ${messages[type]}`);
+    setShowWarning(true);
+  }, []);
+
+  const { modelsLoaded, faceCount, detectFaces } = useFaceDetection({
+    videoRef,
+    enabled: !!attemptId,
+    noFaceGracePeriod: 5000,
+    onAnomaly: handleFaceAnomaly,
+  });
+
+  // Violation handler for proctor events
   const handleViolation = useCallback((type: ViolationType, details: string) => {
     setViolationCounter((prev) => prev + 1);
     if (['tab_switch', 'devtools_open', 'fullscreen_exit', 'camera_disabled'].includes(type)) {
@@ -42,17 +64,14 @@ const SecureExamPage = () => {
     await submitExam('auto_submitted');
   }, [submitted]);
 
-  const { tabSwitchCount, timeOutside } = useSecurityMonitor({ attemptId, onViolation: handleViolation, onAutoSubmit: handleAutoSubmit });
-
-  const { videoRef, canvasRef, cameraActive, startCamera, faceCount, anomalyCount } = useProctoring({
+  // Proctor events
+  const { tabSwitchCount, timeOutside } = useProctorEvents({
     attemptId,
-    onAnomaly: (type) => {
-      const messages = { no_face: 'No face detected', multiple_faces: 'Multiple faces detected', face_not_centered: 'Face not centered' };
-      handleViolation(type, messages[type]);
-    },
-    enabled: !!attemptId,
+    onViolation: handleViolation,
+    onAutoSubmit: handleAutoSubmit,
   });
 
+  // Initialize exam
   useEffect(() => {
     if (!examId || !user) return;
     const initExam = async () => {
@@ -72,6 +91,7 @@ const SecureExamPage = () => {
     return () => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); };
   }, [examId, user]);
 
+  // Block clipboard/drag/keys
   useEffect(() => {
     const blockClipboard = (e: ClipboardEvent) => { e.preventDefault(); e.stopPropagation(); if (e.clipboardData) e.clipboardData.setData('text/plain', ''); };
     const blockDrag = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); };
@@ -97,6 +117,21 @@ const SecureExamPage = () => {
     };
   }, []);
 
+  // Periodic face detection + evidence capture (every 15s)
+  useEffect(() => {
+    if (!examReady || !cameraActive || !modelsLoaded || !attemptId) return;
+    const initialTimeout = setTimeout(async () => {
+      const result = await detectFaces();
+      await captureEvidence(videoRef, canvasRef, attemptId, result.faceCount, result.isCentered, !!result.anomalyType);
+    }, 2000);
+    const interval = setInterval(async () => {
+      const result = await detectFaces();
+      await captureEvidence(videoRef, canvasRef, attemptId, result.faceCount, result.isCentered, !!result.anomalyType);
+    }, 15000);
+    return () => { clearTimeout(initialTimeout); clearInterval(interval); };
+  }, [examReady, cameraActive, modelsLoaded, attemptId, detectFaces]);
+
+  // Timer
   useEffect(() => {
     if (timeLeft <= 0 || submitted) return;
     const timer = setInterval(() => {
@@ -105,6 +140,7 @@ const SecureExamPage = () => {
     return () => clearInterval(timer);
   }, [timeLeft, submitted]);
 
+  // Camera disable detection
   useEffect(() => {
     if (attemptId && !cameraActive && questions.length > 0 && examReady) {
       const timeout = setTimeout(() => { if (!cameraActive) handleViolation('camera_disabled', 'Camera disabled'); }, 10000);
@@ -157,7 +193,7 @@ const SecureExamPage = () => {
       </div>
 
       <div className="pt-16 pb-20 px-4 md:px-6 max-w-3xl mx-auto">
-        {/* Camera */}
+        {/* Camera preview */}
         <div className="fixed top-16 right-4 z-40">
           <div className="w-32 h-24 md:w-40 md:h-28 rounded border border-border overflow-hidden bg-muted relative">
             <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
