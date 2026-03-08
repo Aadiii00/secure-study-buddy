@@ -47,7 +47,10 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
+        {/* Back + Logo */}
+        <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6">
+          <ArrowLeft className="w-4 h-4" /> Back to home
+        </button>
         <div className="flex items-center justify-center gap-2 mb-8">
           <Shield className="w-6 h-6" />
           <span className="text-xl font-semibold">Exam Guardrail</span>
