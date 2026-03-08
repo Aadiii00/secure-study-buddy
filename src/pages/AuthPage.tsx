@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Shield, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import { Shield, Eye, EyeOff, Lock, Mail, User, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -21,13 +22,20 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      if (isLogin) {
+      if (mode === 'login') {
         await signIn(email, password);
         toast.success('Welcome back!');
         navigate('/dashboard');
-      } else {
+      } else if (mode === 'signup') {
         await signUp(email, password, fullName);
         toast.success('Account created! Check your email to verify.');
+      } else if (mode === 'forgot') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success('Password reset link sent to your email!');
+        setMode('login');
       }
     } catch (error: any) {
       toast.error(error.message || 'Authentication failed');
@@ -38,7 +46,6 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center security-grid relative overflow-hidden">
-      {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-secondary/20" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
@@ -61,28 +68,37 @@ const AuthPage = () => {
             </div>
           </div>
 
-          {/* Toggle */}
-          <div className="flex rounded-lg bg-secondary/50 p-1 mb-6">
-            <button
-              onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                isLogin ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                !isLogin ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Sign Up
-            </button>
-          </div>
+          {mode === 'forgot' ? (
+            <>
+              <button onClick={() => setMode('login')} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
+                <ArrowLeft className="w-4 h-4" /> Back to sign in
+              </button>
+              <h2 className="text-lg font-semibold text-foreground mb-2">Reset Password</h2>
+              <p className="text-sm text-muted-foreground mb-6">Enter your email and we'll send you a reset link.</p>
+            </>
+          ) : (
+            <div className="flex rounded-lg bg-secondary/50 p-1 mb-6">
+              <button
+                onClick={() => setMode('login')}
+                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
+                  mode === 'login' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setMode('signup')}
+                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
+                  mode === 'signup' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+            {mode === 'signup' && (
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -90,7 +106,7 @@ const AuthPage = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="pl-10 bg-secondary/30 border-border/50 focus:border-primary"
-                  required={!isLogin}
+                  required={mode === 'signup'}
                 />
               </div>
             )}
@@ -105,31 +121,41 @@ const AuthPage = () => {
                 required
               />
             </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10 bg-secondary/30 border-border/50 focus:border-primary"
-                required
-                minLength={6}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {mode !== 'forgot' && (
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 pr-10 bg-secondary/30 border-border/50 focus:border-primary"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            )}
+
+            {mode === 'login' && (
+              <button type="button" onClick={() => setMode('forgot')}
+                className="text-sm text-primary hover:text-primary/80 transition-colors">
+                Forgot password?
               </button>
-            </div>
+            )}
+
             <Button
               type="submit"
               disabled={loading}
               className="w-full gradient-primary text-primary-foreground font-semibold h-11 glow-primary"
             >
-              {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
+              {loading ? 'Processing...' : mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
             </Button>
           </form>
         </div>

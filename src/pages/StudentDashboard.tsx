@@ -2,10 +2,17 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Shield, BookOpen, Clock, Play, BarChart3, LogOut, User } from 'lucide-react';
+import { Shield, BookOpen, Clock, Play, BarChart3, LogOut, User, Trophy, AlertTriangle, TrendingUp, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import ExamStartModal from '@/components/exam/ExamStartModal';
+
+const fadeUp = (i: number) => ({
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+  transition: { delay: i * 0.05 },
+});
 
 const StudentDashboard = () => {
   const { user, role, signOut } = useAuth();
@@ -13,6 +20,7 @@ const StudentDashboard = () => {
   const [exams, setExams] = useState<any[]>([]);
   const [attempts, setAttempts] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
+  const [examToStart, setExamToStart] = useState<any>(null);
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
@@ -31,9 +39,13 @@ const StudentDashboard = () => {
     setProfile(profileData);
   };
 
-  const startExam = (examId: string) => {
-    navigate(`/exam/${examId}`);
-  };
+  const completedAttempts = attempts.filter(a => a.status === 'completed' || a.status === 'auto_submitted');
+  const avgScore = completedAttempts.length > 0
+    ? Math.round(completedAttempts.filter(a => a.score !== null).reduce((acc, a) => acc + (a.score || 0), 0) / (completedAttempts.filter(a => a.score !== null).length || 1))
+    : 0;
+  const avgCredibility = completedAttempts.length > 0
+    ? Math.round(completedAttempts.filter(a => a.credibility_score !== null).reduce((acc, a) => acc + (a.credibility_score || 0), 0) / (completedAttempts.filter(a => a.credibility_score !== null).length || 1))
+    : 100;
 
   const handleSignOut = async () => {
     await signOut();
@@ -65,115 +77,151 @@ const StudentDashboard = () => {
 
       <main className="container mx-auto px-6 py-8">
         {/* Welcome */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+        <motion.div {...fadeUp(0)} className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Welcome, {profile?.full_name || 'Student'}
+            Welcome back, {profile?.full_name || 'Student'} 👋
           </h1>
-          <p className="text-muted-foreground">Your exam dashboard — take exams and view your results.</p>
+          <p className="text-muted-foreground">Your exam dashboard — take exams, view results, and track your credibility.</p>
         </motion.div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Available Exams', value: exams.length, icon: BookOpen, color: 'text-primary' },
-            { label: 'Completed', value: attempts.filter(a => a.status === 'completed').length, icon: BarChart3, color: 'text-success' },
-            { label: 'Average Score', value: `${Math.round(attempts.filter(a => a.score !== null).reduce((acc, a) => acc + (a.score || 0), 0) / (attempts.filter(a => a.score !== null).length || 1))}%`, icon: BarChart3, color: 'text-warning' },
+            { label: 'Completed', value: completedAttempts.length, icon: Trophy, color: 'text-success' },
+            { label: 'Avg Score', value: `${avgScore}%`, icon: TrendingUp, color: 'text-warning' },
+            { label: 'Avg Credibility', value: `${avgCredibility}%`, icon: Shield, color: avgCredibility >= 75 ? 'text-success' : avgCredibility >= 50 ? 'text-warning' : 'text-danger' },
           ].map((stat, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="glass-card p-5"
-            >
+            <motion.div key={i} {...fadeUp(i + 1)} className="glass-card p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-xs text-muted-foreground">{stat.label}</p>
                   <p className={`text-2xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
                 </div>
-                <stat.icon className={`w-8 h-8 ${stat.color} opacity-50`} />
+                <stat.icon className={`w-8 h-8 ${stat.color} opacity-30`} />
               </div>
             </motion.div>
           ))}
         </div>
 
         {/* Available Exams */}
-        <h2 className="text-xl font-semibold text-foreground mb-4">Available Exams</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-foreground">Available Exams</h2>
+          <span className="text-sm text-muted-foreground">{exams.length} exam(s)</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
           {exams.map((exam, i) => (
-            <motion.div
-              key={exam.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="glass-card p-6 hover:glow-primary transition-shadow"
-            >
-              <h3 className="text-lg font-semibold text-foreground mb-2">{exam.title}</h3>
-              <p className="text-sm text-muted-foreground mb-4">{exam.description}</p>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+            <motion.div key={exam.id} {...fadeUp(i)} className="glass-card p-6 hover:glow-primary transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex items-start justify-between mb-3">
+                <h3 className="text-lg font-semibold text-foreground">{exam.title}</h3>
+                <span className="text-xs font-mono px-2 py-1 rounded bg-success/10 text-success">ACTIVE</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{exam.description || 'No description provided.'}</p>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-5">
                 <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {exam.duration_minutes} min</span>
                 <span className="flex items-center gap-1"><BookOpen className="w-4 h-4" /> {exam.total_questions} questions</span>
               </div>
-              <Button
-                onClick={() => startExam(exam.id)}
-                className="gradient-primary text-primary-foreground w-full"
-              >
+              <Button onClick={() => setExamToStart(exam)} className="gradient-primary text-primary-foreground w-full glow-primary">
                 <Play className="w-4 h-4 mr-2" /> Start Exam
               </Button>
             </motion.div>
           ))}
           {exams.length === 0 && (
-            <div className="glass-card p-8 text-center col-span-2">
-              <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No exams available right now.</p>
+            <div className="glass-card p-10 text-center col-span-2">
+              <BookOpen className="w-14 h-14 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground text-lg">No exams available right now.</p>
+              <p className="text-sm text-muted-foreground mt-1">Check back later or contact your instructor.</p>
             </div>
           )}
         </div>
 
         {/* Past Attempts */}
-        <h2 className="text-xl font-semibold text-foreground mb-4">Your Results</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-foreground">Your Results</h2>
+          <span className="text-sm text-muted-foreground">{attempts.length} attempt(s)</span>
+        </div>
         <div className="space-y-3">
           {attempts.map((attempt, i) => (
-            <motion.div
-              key={attempt.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="glass-card p-4 flex items-center justify-between cursor-pointer hover:glow-primary transition-shadow"
-              onClick={() => navigate(`/results/${attempt.id}`)}
-            >
-              <div>
-                <h4 className="font-medium text-foreground">{(attempt as any).exams?.title || 'Exam'}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(attempt.started_at).toLocaleDateString()} • Status: {attempt.status}
-                </p>
+            <motion.div key={attempt.id} {...fadeUp(i)}
+              className="glass-card p-4 flex items-center justify-between cursor-pointer hover:glow-primary transition-all duration-300 group"
+              onClick={() => navigate(`/results/${attempt.id}`)}>
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  attempt.status === 'auto_submitted' ? 'bg-danger/10' : 'bg-primary/10'
+                }`}>
+                  {attempt.status === 'auto_submitted' ? (
+                    <AlertTriangle className="w-5 h-5 text-danger" />
+                  ) : (
+                    <BarChart3 className="w-5 h-5 text-primary" />
+                  )}
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground group-hover:text-primary transition-colors">
+                    {(attempt as any).exams?.title || 'Exam'}
+                  </h4>
+                  <p className="text-xs text-muted-foreground flex items-center gap-2">
+                    <Calendar className="w-3 h-3" />
+                    {new Date(attempt.started_at).toLocaleDateString()} at {new Date(attempt.started_at).toLocaleTimeString()}
+                    <span className={`px-1.5 py-0.5 rounded text-xs ${
+                      attempt.status === 'completed' ? 'bg-success/10 text-success' :
+                      attempt.status === 'auto_submitted' ? 'bg-danger/10 text-danger' :
+                      'bg-warning/10 text-warning'
+                    }`}>{attempt.status.replace('_', ' ')}</span>
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
+              <div className="text-right flex items-center gap-6">
                 {attempt.score !== null && (
-                  <span className={`text-lg font-bold ${attempt.score >= 70 ? 'text-success' : attempt.score >= 50 ? 'text-warning' : 'text-danger'}`}>
-                    {attempt.score}%
-                  </span>
+                  <div>
+                    <span className={`text-lg font-bold ${attempt.score >= 70 ? 'text-success' : attempt.score >= 50 ? 'text-warning' : 'text-danger'}`}>
+                      {attempt.score}%
+                    </span>
+                    <p className="text-xs text-muted-foreground">Score</p>
+                  </div>
+                )}
+                {attempt.credibility_score !== null && (
+                  <div>
+                    <span className={`text-lg font-bold ${
+                      attempt.credibility_score >= 75 ? 'text-success' : attempt.credibility_score >= 50 ? 'text-warning' : 'text-danger'
+                    }`}>
+                      {attempt.credibility_score}
+                    </span>
+                    <p className="text-xs text-muted-foreground">Credibility</p>
+                  </div>
                 )}
                 {attempt.risk_level && (
-                  <p className={`text-xs font-mono ${attempt.risk_level === 'low' ? 'text-success' : attempt.risk_level === 'medium' ? 'text-warning' : 'text-danger'}`}>
-                    Risk: {attempt.risk_level.toUpperCase()}
-                  </p>
+                  <div className={`px-2 py-1 rounded text-xs font-mono ${
+                    attempt.risk_level === 'low' ? 'bg-success/10 text-success' :
+                    attempt.risk_level === 'medium' ? 'bg-warning/10 text-warning' :
+                    'bg-danger/10 text-danger'
+                  }`}>
+                    {attempt.risk_level.toUpperCase()}
+                  </div>
                 )}
               </div>
             </motion.div>
           ))}
           {attempts.length === 0 && (
-            <div className="glass-card p-8 text-center">
-              <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">No exam attempts yet. Start an exam to see results here.</p>
+            <div className="glass-card p-10 text-center">
+              <BarChart3 className="w-14 h-14 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground text-lg">No exam attempts yet.</p>
+              <p className="text-sm text-muted-foreground mt-1">Start an exam above to see results here.</p>
             </div>
           )}
         </div>
       </main>
+
+      {/* Exam Start Modal */}
+      {examToStart && (
+        <ExamStartModal
+          open={!!examToStart}
+          examTitle={examToStart.title}
+          duration={examToStart.duration_minutes}
+          totalQuestions={examToStart.total_questions}
+          onStart={() => { navigate(`/exam/${examToStart.id}`); setExamToStart(null); }}
+          onCancel={() => setExamToStart(null)}
+        />
+      )}
     </div>
   );
 };
