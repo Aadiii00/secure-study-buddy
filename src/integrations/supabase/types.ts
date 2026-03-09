@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      code_submissions: {
+        Row: {
+          code: string
+          created_at: string
+          execution_time_ms: number | null
+          id: string
+          language: string
+          passed_count: number | null
+          problem_id: string
+          result_details: Json | null
+          score: number | null
+          status: string
+          total_count: number | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          execution_time_ms?: number | null
+          id?: string
+          language: string
+          passed_count?: number | null
+          problem_id: string
+          result_details?: Json | null
+          score?: number | null
+          status?: string
+          total_count?: number | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          execution_time_ms?: number | null
+          id?: string
+          language?: string
+          passed_count?: number | null
+          problem_id?: string
+          result_details?: Json | null
+          score?: number | null
+          status?: string
+          total_count?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "code_submissions_problem_id_fkey"
+            columns: ["problem_id"]
+            isOneToOne: false
+            referencedRelation: "coding_problems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coding_problems: {
+        Row: {
+          constraints: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          difficulty: string
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          constraints?: string | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          constraints?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exam_attempts: {
         Row: {
           answers: Json | null
@@ -199,6 +288,44 @@ export type Database = {
             columns: ["exam_id"]
             isOneToOne: false
             referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_cases: {
+        Row: {
+          created_at: string
+          expected_output: string
+          id: string
+          input: string
+          is_hidden: boolean
+          order_index: number
+          problem_id: string
+        }
+        Insert: {
+          created_at?: string
+          expected_output: string
+          id?: string
+          input: string
+          is_hidden?: boolean
+          order_index?: number
+          problem_id: string
+        }
+        Update: {
+          created_at?: string
+          expected_output?: string
+          id?: string
+          input?: string
+          is_hidden?: boolean
+          order_index?: number
+          problem_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_cases_problem_id_fkey"
+            columns: ["problem_id"]
+            isOneToOne: false
+            referencedRelation: "coding_problems"
             referencedColumns: ["id"]
           },
         ]
