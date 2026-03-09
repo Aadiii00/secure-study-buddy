@@ -1,1 +1,4 @@
 project_id = "ncdfredtanctfswurfna"
+
+[functions.evaluate-code]
+verify_jwt = false

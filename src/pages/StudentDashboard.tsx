@@ -50,6 +50,9 @@ const StudentDashboard = () => {
             <span className="font-semibold">Exam Guardrail</span>
           </div>
           <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/coding')}>
+              <Code2 className="w-4 h-4 mr-1" /> Coding
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => navigate('/leaderboard')}>
               <Medal className="w-4 h-4 mr-1" /> Leaderboard
             </Button>

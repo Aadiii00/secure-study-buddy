@@ -441,6 +441,9 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* Coding Problems */}
+        {activeTab === 'coding' && <CodingProblemsAdmin />}
+
         {/* Students */}
         {activeTab === 'students' && (
           <div>
