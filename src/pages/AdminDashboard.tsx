@@ -2,20 +2,21 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Shield, Users, BookOpen, AlertTriangle, Eye, Download, Filter, LogOut, Plus, Trash2, Activity, Clock, BarChart3, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Shield, Users, BookOpen, AlertTriangle, Eye, Download, Filter, LogOut, Plus, Trash2, Activity, Clock, BarChart3, ToggleLeft, ToggleRight, Code2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { AnimatePresence, motion } from 'framer-motion';
 import { getRiskColor, getRiskBg } from '@/lib/credibilityEngine';
 import ViolationCharts from '@/components/admin/ViolationCharts';
+import CodingProblemsAdmin from '@/components/admin/CodingProblemsAdmin';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 
 const AdminDashboard = () => {
   const { user, role, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'attempts' | 'exams' | 'create' | 'students' | 'live'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'attempts' | 'exams' | 'create' | 'students' | 'live' | 'coding'>('overview');
   const [attempts, setAttempts] = useState<any[]>([]);
   const [exams, setExams] = useState<any[]>([]);
   const [violations, setViolations] = useState<any[]>([]);
@@ -140,6 +141,7 @@ const AdminDashboard = () => {
     { key: 'exams', label: 'Exams', icon: BookOpen },
     { key: 'create', label: 'Create', icon: Plus },
     { key: 'students', label: 'Students', icon: Users },
+    { key: 'coding', label: 'Coding', icon: Code2 },
   ] as const;
 
   const totalStudents = profiles.length;
@@ -438,6 +440,9 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+
+        {/* Coding Problems */}
+        {activeTab === 'coding' && <CodingProblemsAdmin />}
 
         {/* Students */}
         {activeTab === 'students' && (

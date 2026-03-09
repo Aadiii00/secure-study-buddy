@@ -12,6 +12,8 @@ import StudentDashboard from "./pages/StudentDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import SecureExamPage from "./pages/SecureExamPage";
 import ResultsPage from "./pages/ResultsPage";
+import CodingProblemsPage from "./pages/CodingProblemsPage";
+import CodingChallengePage from "./pages/CodingChallengePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +59,8 @@ const App = () => (
             <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
             <Route path="/exam/:examId" element={<ProtectedRoute><SecureExamPage /></ProtectedRoute>} />
             <Route path="/results/:attemptId" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
+            <Route path="/coding" element={<ProtectedRoute><CodingProblemsPage /></ProtectedRoute>} />
+            <Route path="/coding/:problemId" element={<ProtectedRoute><CodingChallengePage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
