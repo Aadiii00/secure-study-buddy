@@ -185,7 +185,7 @@ const SecureExamPage = () => {
             <div className="w-7 h-7 rounded bg-primary flex items-center justify-center">
               <Shield className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-sm text-foreground hidden lg:block">ExamGuard</span>
+            <span className="font-semibold text-sm text-foreground hidden lg:block">Tracxn<span className="text-red-500">Labs</span></span>
           </div>
           <div className="h-5 w-px bg-border" />
           <span className="text-sm text-muted-foreground truncate max-w-[160px]">{examTitle}</span>

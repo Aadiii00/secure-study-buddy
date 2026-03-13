@@ -164,7 +164,7 @@ const AuthPage = () => {
         </button>
         <div className="flex items-center justify-center gap-2 mb-8">
           <Shield className="w-6 h-6" />
-          <span className="text-xl font-semibold">Exam Guardrail</span>
+          <span className="text-xl font-semibold">Tracxn<span className="text-red-500">Labs</span></span>
         </div>
 
         {mode === 'forgot' ? (
