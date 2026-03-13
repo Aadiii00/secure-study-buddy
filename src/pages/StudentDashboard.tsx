@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Shield, BookOpen, Clock, Play, BarChart3, LogOut, User, Trophy, Calendar, Medal, Code2 } from 'lucide-react';
+import { Shield, BookOpen, Clock, Play, BarChart3, LogOut, User, Trophy, Calendar, Medal, Code2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import ExamStartModal from '@/components/exam/ExamStartModal';
@@ -30,6 +30,13 @@ const StudentDashboard = () => {
     setExams(examsData || []);
     setAttempts(attemptsData || []);
     setProfile(profileData);
+  };
+
+  const getExamStatus = (examId: string) => {
+    const examAttempts = attempts.filter(a => a.exam_id === examId);
+    if (examAttempts.length === 0) return 'not_started';
+    const completedAttempt = examAttempts.find(a => a.status === 'completed' || a.status === 'auto_submitted');
+    return completedAttempt ? 'completed' : 'in_progress';
   };
 
   const completedAttempts = attempts.filter(a => a.status === 'completed' || a.status === 'auto_submitted');
@@ -86,19 +93,47 @@ const StudentDashboard = () => {
         {/* Available Exams */}
         <h2 className="text-lg font-medium mb-3">Available Exams</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-          {exams.map((exam) => (
-            <div key={exam.id} className="border border-border rounded-lg p-5">
-              <h3 className="font-medium mb-1">{exam.title}</h3>
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{exam.description || 'No description.'}</p>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground mb-4">
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {exam.duration_minutes} min</span>
-                <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {exam.total_questions} questions</span>
+          {exams.map((exam) => {
+            const examStatus = getExamStatus(exam.id);
+            const isCompleted = examStatus === 'completed';
+            
+            return (
+              <div key={exam.id} className={`border rounded-lg p-5 relative ${
+                isCompleted ? 'border-success/30 bg-success/5' : 'border-border'
+              }`}>
+                {isCompleted && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircle className="w-5 h-5 text-success" />
+                  </div>
+                )}
+                <h3 className="font-medium mb-1">{exam.title}</h3>
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{exam.description || 'No description.'}</p>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground mb-4">
+                  <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {exam.duration_minutes} min</span>
+                  <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {exam.total_questions} questions</span>
+                </div>
+                {isCompleted ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-success font-medium">Completed</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => {
+                        const completedAttempt = attempts.find(a => a.exam_id === exam.id && (a.status === 'completed' || a.status === 'auto_submitted'));
+                        if (completedAttempt) navigate(`/results/${completedAttempt.id}`);
+                      }}
+                    >
+                      View Results
+                    </Button>
+                  </div>
+                ) : (
+                  <Button onClick={() => setExamToStart(exam)} className="w-full" size="sm">
+                    <Play className="w-4 h-4 mr-1" /> Start Exam
+                  </Button>
+                )}
               </div>
-              <Button onClick={() => setExamToStart(exam)} className="w-full" size="sm">
-                <Play className="w-4 h-4 mr-1" /> Start Exam
-              </Button>
-            </div>
-          ))}
+            );
+          })}
           {exams.length === 0 && (
             <div className="border border-border rounded-lg p-8 text-center col-span-2 text-muted-foreground">
               No exams available right now.
