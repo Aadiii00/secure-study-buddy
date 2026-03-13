@@ -5,6 +5,8 @@ export function useAdminWebRTC(attemptId: string) {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const [connected, setConnected] = useState(false);
+  const candidateQueue = useRef<RTCIceCandidateInit[]>([]);
+  const hasRemoteDescription = useRef(false);
 
   useEffect(() => {
     if (!attemptId) return;
@@ -62,6 +64,13 @@ export function useAdminWebRTC(attemptId: string) {
         if (pcRef.current && pcRef.current.signalingState !== 'stable') {
           try {
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+            hasRemoteDescription.current = true;
+            
+            // Process queued candidates
+            for (const c of candidateQueue.current) {
+              await pcRef.current.addIceCandidate(new RTCIceCandidate(c));
+            }
+            candidateQueue.current = [];
           } catch (e) {
             console.error('Error setting remote answer', e);
           }
@@ -73,7 +82,11 @@ export function useAdminWebRTC(attemptId: string) {
         
         if (pcRef.current && candidate) {
           try {
-            await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+            if (hasRemoteDescription.current) {
+              await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+            } else {
+              candidateQueue.current.push(candidate);
+            }
           } catch (e) {
             console.error('Error adding admin ICE candidate', e);
           }

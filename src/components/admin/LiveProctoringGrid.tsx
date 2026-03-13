@@ -16,7 +16,7 @@ const LiveStudentCard = ({ attempt, profile, violations }: LiveStudentCardProps)
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
     }
-  }, [stream]);
+  }, [stream, connected]);
   
   // Status logic
   const recentViolations = violations.filter(
@@ -35,17 +35,17 @@ const LiveStudentCard = ({ attempt, profile, violations }: LiveStudentCardProps)
     }`}>
       {/* Video Feed */}
       <div className="relative aspect-video bg-muted flex items-center justify-center overflow-hidden">
-        {stream && connected ? (
-          <video 
-            ref={videoRef}
-            autoPlay 
-            muted 
-            playsInline 
-            className="w-full h-full object-cover" 
-            style={{ transform: 'scaleX(-1)' }} 
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center text-muted-foreground">
+        <video 
+          ref={videoRef}
+          autoPlay 
+          muted 
+          playsInline 
+          className={`w-full h-full object-cover ${(!stream || !connected) ? 'hidden' : ''}`} 
+          style={{ transform: 'scaleX(-1)' }} 
+        />
+        
+        {(!stream || !connected) && (
+          <div className="flex flex-col items-center justify-center text-muted-foreground absolute inset-0">
             <VideoOff className="w-8 h-8 mb-2 opacity-50" />
             <span className="text-xs font-medium">Stream Disconnected</span>
           </div>
