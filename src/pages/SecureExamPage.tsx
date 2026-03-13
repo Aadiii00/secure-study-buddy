@@ -7,6 +7,8 @@ import { useWebcam } from '@/proctoring/useWebcam';
 import { useFaceDetection } from '@/proctoring/useFaceDetection';
 import { useProctorEvents } from '@/proctoring/useProctorEvents';
 import { captureEvidence } from '@/proctoring/evidenceCapture';
+import { useProctoringRecord } from '@/proctoring/useProctoringRecord';
+import { useStudentWebRTC } from '@/proctoring/useStudentWebRTC';
 import {
   AlertTriangle, Camera, Clock, ChevronLeft, ChevronRight, Send, Lock,
   PanelLeftClose, PanelLeftOpen, ChevronDown, ChevronUp, CheckCircle2,
@@ -47,7 +49,13 @@ const SecureExamPage = () => {
   } | null>(null);
 
   // Webcam
-  const { videoRef, cameraActive, startCamera } = useWebcam();
+  const { videoRef, cameraActive, startCamera, stream } = useWebcam();
+  
+  // Recording
+  const { startRecording, stopRecordingAndUpload, isRecording } = useProctoringRecord({ attemptId, stream });
+
+  // WebRTC signaling for live admin view
+  useStudentWebRTC(attemptId, stream);
 
   // Face detection with 5s grace period
   const handleFaceAnomaly = useCallback((type: 'no_face' | 'multiple_faces' | 'face_not_centered') => {
@@ -215,6 +223,13 @@ const SecureExamPage = () => {
     }
   }, [faceCount, examReady, submitted, examStarted, examPaused]);
 
+  // Start recording when exam officially starts
+  useEffect(() => {
+    if (examStarted && cameraActive && attemptId && !isRecording) {
+      startRecording();
+    }
+  }, [examStarted, cameraActive, attemptId, isRecording, startRecording]);
+
   // Camera disable detection
   useEffect(() => {
     if (attemptId && !cameraActive && questions.length > 0 && examReady) {
@@ -229,6 +244,10 @@ const SecureExamPage = () => {
     let correct = 0;
     questions.forEach((q) => { if (answers[q.id] === q.correct_option) correct++; });
     const score = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
+    
+    // Stop recording and let it upload in the background
+    stopRecordingAndUpload();
+    
     await supabase.from('exam_attempts').update({ ended_at: new Date().toISOString(), answers, score, status }).eq('id', attemptId);
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     

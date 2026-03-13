@@ -111,6 +111,7 @@ export type Database = {
           ended_at: string | null
           exam_id: string
           id: string
+          recording_url: string | null
           risk_level: string | null
           score: number | null
           started_at: string
@@ -124,6 +125,7 @@ export type Database = {
           ended_at?: string | null
           exam_id: string
           id?: string
+          recording_url?: string | null
           risk_level?: string | null
           score?: number | null
           started_at?: string
@@ -137,6 +139,7 @@ export type Database = {
           ended_at?: string | null
           exam_id?: string
           id?: string
+          recording_url?: string | null
           risk_level?: string | null
           score?: number | null
           started_at?: string

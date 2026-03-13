@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { getRiskColor, getRiskBg } from '@/lib/credibilityEngine';
 import ViolationCharts from '@/components/admin/ViolationCharts';
 import CodingProblemsAdmin from '@/components/admin/CodingProblemsAdmin';
+import LiveProctoringGrid from '@/components/admin/LiveProctoringGrid';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 
@@ -251,28 +252,40 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* Live Feed */}
+        {/* Live Proctoring */}
         {activeTab === 'live' && (
-          <div>
+          <div className="space-y-6">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-2 h-2 rounded-full bg-danger animate-pulse" />
-              <span className="text-sm font-medium">Live Feed</span>
-              <span className="text-xs text-muted-foreground">({liveViolations.length} events)</span>
+              <span className="text-sm font-medium">Live Proctoring</span>
+              <span className="text-xs text-muted-foreground">({inProgressCount} active students)</span>
             </div>
-            <div className="border border-border rounded-lg divide-y divide-border max-h-[600px] overflow-y-auto">
-              {liveViolations.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground text-sm">Waiting for violations...</div>
-              )}
-              {liveViolations.map((v: any, i) => (
-                <div key={v.id || i} className="flex items-center gap-3 px-3 py-2 text-sm">
-                  <span className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleTimeString()}</span>
-                  <span className={`text-xs px-1.5 py-0.5 rounded ${
-                    v.severity === 'critical' ? 'bg-destructive/10 text-danger' : v.severity === 'high' ? 'bg-warning/10 text-warning' : 'bg-muted text-muted-foreground'
-                  }`}>{v.severity}</span>
-                  <span>{v.type}</span>
-                  <span className="text-muted-foreground truncate">{v.details}</span>
-                </div>
-              ))}
+            
+            <LiveProctoringGrid 
+              activeAttempts={attempts.filter(a => a.status === 'in_progress')} 
+              profiles={profiles} 
+              liveViolations={liveViolations} 
+            />
+
+            <div className="mt-8 pt-6 border-t border-border">
+              <h3 className="text-sm font-medium mb-4">Recent Live Alerts</h3>
+              <div className="border border-border rounded-lg divide-y divide-border max-h-[300px] overflow-y-auto">
+                {liveViolations.length === 0 && (
+                  <div className="text-center py-6 text-muted-foreground text-sm">No recent alerts...</div>
+                )}
+                {liveViolations.map((v: any, i) => (
+                  <div key={v.id || i} className="flex items-center gap-3 px-3 py-2 text-sm">
+                    <span className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleTimeString()}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${
+                      v.severity === 'critical' ? 'bg-destructive/10 text-danger' : 
+                      v.severity === 'high' ? 'bg-warning/10 text-warning' : 
+                      'bg-muted text-muted-foreground'
+                    }`}>{v.severity}</span>
+                    <span className="font-medium">{v.type}</span>
+                    <span className="text-muted-foreground truncate">{v.details}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

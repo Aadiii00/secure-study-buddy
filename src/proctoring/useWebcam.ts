@@ -6,6 +6,7 @@ import { useCallback, useRef, useState } from 'react';
 export function useWebcam() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
 
@@ -25,6 +26,7 @@ export function useWebcam() {
           };
         });
       }
+      setStream(stream);
       setCameraActive(true);
       setPermissionDenied(false);
     } catch (err) {
@@ -37,8 +39,9 @@ export function useWebcam() {
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+    setStream(null);
     setCameraActive(false);
   }, []);
 
-  return { videoRef, cameraActive, permissionDenied, startCamera, stopCamera };
+  return { videoRef, stream, cameraActive, permissionDenied, startCamera, stopCamera };
 }
