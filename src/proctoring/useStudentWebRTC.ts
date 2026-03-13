@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export function useStudentWebRTC(attemptId: string, stream: MediaStream | null) {
   const peerConnections = useRef<Map<string, RTCPeerConnection>>(new Map());
+  const pendingCandidates = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
 
   useEffect(() => {
     if (!attemptId || !stream) return;
@@ -37,6 +38,17 @@ export function useStudentWebRTC(attemptId: string, stream: MediaStream | null) 
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
+      // Flush any candidates that arrived early for this connection
+      const queued = pendingCandidates.current.get(senderId) || [];
+      for (const c of queued) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(c));
+        } catch (e) {
+          console.error('Error adding queued ICE candidate', e);
+        }
+      }
+      pendingCandidates.current.delete(senderId);
+
       channel.send({
         type: 'broadcast',
         event: 'webrtc-answer',
@@ -49,12 +61,17 @@ export function useStudentWebRTC(attemptId: string, stream: MediaStream | null) 
       if (targetId !== 'student') return; // Only process candidates meant for the student
       
       const pc = peerConnections.current.get(senderId);
-      if (pc && candidate) {
+      if (pc && pc.remoteDescription) {
         try {
           await pc.addIceCandidate(new RTCIceCandidate(candidate));
         } catch (e) {
           console.error('Error adding ICE candidate', e);
         }
+      } else {
+        // Queue candidate if PC is not ready or doesn't have remote description yet
+        const currentQueue = pendingCandidates.current.get(senderId) || [];
+        currentQueue.push(candidate);
+        pendingCandidates.current.set(senderId, currentQueue);
       }
     };
 

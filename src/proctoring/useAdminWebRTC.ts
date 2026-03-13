@@ -6,12 +6,11 @@ export function useAdminWebRTC(attemptId: string) {
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const [connected, setConnected] = useState(false);
   const candidateQueue = useRef<RTCIceCandidateInit[]>([]);
-  const hasRemoteDescription = useRef(false);
 
   useEffect(() => {
     if (!attemptId) return;
-    
-    const senderId = `admin-${crypto.randomUUID()}`;
+    // Generate a unique ID per admin connection instance
+    const senderId = `admin-${attemptId}-${crypto.randomUUID()}`;
     const channel = supabase.channel(`webrtc-${attemptId}`);
     
     const config: RTCConfiguration = {
@@ -58,13 +57,13 @@ export function useAdminWebRTC(attemptId: string) {
 
     channel
       .on('broadcast', { event: 'webrtc-answer' }, async (payload) => {
-        const { answer, targetId } = payload.payload;
-        if (targetId !== senderId) return;
+        const { answer, targetId, senderId: remoteSender } = payload.payload;
+        if (targetId !== senderId) return; // Strict bounds: only process answers targeted to this admin instance
+        if (remoteSender !== 'student') return;
         
         if (pcRef.current && pcRef.current.signalingState !== 'stable') {
           try {
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
-            hasRemoteDescription.current = true;
             
             // Process queued candidates
             for (const c of candidateQueue.current) {
@@ -77,12 +76,13 @@ export function useAdminWebRTC(attemptId: string) {
         }
       })
       .on('broadcast', { event: 'webrtc-candidate' }, async (payload) => {
-        const { candidate, targetId } = payload.payload;
+        const { candidate, targetId, senderId: remoteSender } = payload.payload;
         if (targetId !== senderId) return;
+        if (remoteSender !== 'student') return;
         
         if (pcRef.current && candidate) {
           try {
-            if (hasRemoteDescription.current) {
+            if (pcRef.current.remoteDescription) {
               await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
             } else {
               candidateQueue.current.push(candidate);
