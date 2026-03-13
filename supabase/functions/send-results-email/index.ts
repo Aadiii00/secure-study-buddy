@@ -32,7 +32,7 @@ serve(async (req) => {
 <body style="margin:0;padding:0;background:#f9fafb;font-family:Arial,sans-serif;">
   <div style="max-width:520px;margin:40px auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
     <div style="background:#000000;padding:24px 32px;">
-      <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:600;">🛡️ ExamGuard Results</h1>
+      <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:600;">🛡️ TracxnLabs Results</h1>
     </div>
     <div style="padding:32px;">
       <p style="color:#374151;font-size:15px;margin:0 0 8px;">Hi ${studentName || 'Student'},</p>
