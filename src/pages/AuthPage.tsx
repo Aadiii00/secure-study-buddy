@@ -38,23 +38,14 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-<<<<<<< HEAD
-  const { user, signIn, signUp, resendVerification } = useAuth();
-  const navigate = useNavigate();
 
-  // Redirect authenticated users to dashboard
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, navigate]);
-=======
   const [adminMode, setAdminMode] = useState<'login' | 'signup'>('login');
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [adminFullName, setAdminFullName] = useState('');
   const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
+
   const { signIn, signUp, resendVerification, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -73,7 +64,6 @@ const AuthPage = () => {
     if (!actual) throw new Error('No role assigned to this account.');
     if (actual !== expectedRole) throw new Error(`This account is not ${expectedRole}.`);
   };
->>>>>>> eade1d8 (double signin/signup)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
