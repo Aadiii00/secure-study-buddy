@@ -89,22 +89,132 @@ const ResultsPage = () => {
 
   const exportPDF = () => {
     if (!report || !attempt) return;
-    const doc = new jsPDF();
-    doc.setFontSize(22);
-    doc.text('Credibility Certificate', 20, 25);
-    doc.setFontSize(11);
-    doc.text(`Exam: ${(attempt as any).exams?.title}`, 20, 40);
-    doc.text(`Score: ${attempt.score}%`, 20, 50);
-    doc.text(`Credibility: ${report.score}/100`, 20, 60);
-    doc.text(`Risk: ${report.riskLevel.toUpperCase()}`, 20, 70);
-    doc.text(`Violations: ${report.totalViolations}`, 20, 85);
-    doc.setFontSize(14);
-    doc.text('Timeline', 20, 100);
-    doc.setFontSize(9);
-    report.timeline.slice(0, 15).forEach((item, i) => {
-      doc.text(`${item.time} [${item.severity}] ${item.event}`, 20, 110 + i * 7);
+    
+    // Create new PDF (A4 size)
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
     });
-    doc.save(`credibility-${attemptId?.slice(0, 8)}.pdf`);
+    
+    const w = doc.internal.pageSize.getWidth();
+    const h = doc.internal.pageSize.getHeight();
+    
+    // Draw Border
+    doc.setDrawColor(41, 128, 185);
+    doc.setLineWidth(1.5);
+    doc.rect(10, 10, w - 20, h - 20);
+    
+    // Header section
+    doc.setFillColor(41, 128, 185);
+    doc.rect(10, 10, w - 20, 30, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text('Credibility Certificate', w / 2, 28, { align: 'center' });
+    
+    // Reset Text Color for Main Content
+    doc.setTextColor(50, 50, 50);
+    
+    // Attempt Info
+    const attemptDate = new Date(attempt.created_at).toLocaleDateString(undefined, {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text('Exam Information', 20, 55);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    
+    doc.text(`Exam Title: ${(attempt as any).exams?.title}`, 20, 65);
+    doc.text(`Taken On: ${attemptDate}`, 20, 72);
+    doc.text(`Student ID: ${user?.id.slice(0, 12)}`, 20, 79);
+    
+    // Score & Risk Section Cards
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.setFillColor(250, 250, 250);
+    
+    // Score Box
+    doc.rect(20, 90, (w - 50) / 2, 35, 'FD');
+    doc.setFontSize(10);
+    doc.text('Academic Score', 20 + ((w - 50) / 4), 100, { align: 'center'});
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text(`${attempt.score}%`, 20 + ((w - 50) / 4), 115, { align: 'center' });
+    
+    // Credibility Box
+    doc.setFont("helvetica", "normal");
+    doc.rect(30 + ((w - 50) / 2), 90, (w - 50) / 2, 35, 'FD');
+    doc.setFontSize(10);
+    doc.text('Credibility Score', 30 + ((w - 50) / 2) + ((w - 50) / 4), 100, { align: 'center'});
+    
+    if (report.score >= 80) doc.setTextColor(39, 174, 96); // Green
+    else if (report.score >= 50) doc.setTextColor(243, 156, 18); // Orange
+    else doc.setTextColor(231, 76, 60); // Red
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text(`${report.score}/100`, 30 + ((w - 50) / 2) + ((w - 50) / 4), 115, { align: 'center' });
+    
+    // Reset Color
+    doc.setTextColor(50, 50, 50);
+    
+    // Violation Summary
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text('Violation Summary', 20, 145);
+    
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Total Recorded Violations: ${report.totalViolations}`, 20, 155);
+    doc.text(`Overall Risk Level: ${report.riskLevel.toUpperCase()}`, 20, 162);
+    
+    // Breakdown
+    doc.setFontSize(10);
+    doc.text(`• Tab Switches: ${report.tabSwitches}`, 25, 170);
+    doc.text(`• Copy/Paste Attempts: ${report.copyAttempts}`, 25, 176);
+    doc.text(`• Browser DevTools Access: ${report.devtoolsAttempts}`, 25, 182);
+    doc.text(`• Fullscreen Exits: ${report.fullscreenExits}`, 100, 170);
+    doc.text(`• Face Anomalies: ${report.faceAnomalies}`, 100, 176);
+    
+    // Timeline
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text('Session Timeline (Recent)', 20, 200);
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    const timelineLimit = Math.min(report.timeline.length, 12);
+    
+    if (timelineLimit === 0) {
+      doc.setTextColor(39, 174, 96);
+      doc.text('No violations recorded during this session.', 20, 210);
+      doc.setTextColor(50, 50, 50);
+    } else {
+      for (let i = 0; i < timelineLimit; i++) {
+        const item = report.timeline[i];
+        doc.text(`${item.time}`, 20, 210 + i * 6);
+        
+        // Colorize severity
+        if (item.severity === 'critical') doc.setTextColor(231, 76, 60);
+        else if (item.severity === 'high') doc.setTextColor(243, 156, 18);
+        else doc.setTextColor(149, 165, 166);
+        
+        doc.text(`[${item.severity.toUpperCase()}]`, 45, 210 + i * 6);
+        doc.setTextColor(80, 80, 80);
+        doc.text(`${item.event}`, 75, 210 + i * 6);
+      }
+    }
+    
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text('Generated by TracxnLabs Secure Exam Proctoring', w / 2, h - 15, { align: 'center' });
+    
+    doc.save(`Credibility_Report_${attemptId?.slice(0, 8)}.pdf`);
   };
 
   if (!attempt || !report) {

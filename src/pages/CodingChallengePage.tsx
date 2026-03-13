@@ -87,9 +87,9 @@ const CodingChallengePage = () => {
 
     const baseMessage =
       isLeavingCameraView ? 'Leaving camera view or camera obstruction detected.'
-      : isWindowFocusChange ? 'Window focus or screen change detected.'
-      : isKeyboardActivity ? 'Restricted keyboard or mouse interaction detected.'
-      : 'Proctoring rule violation detected.';
+        : isWindowFocusChange ? 'Window focus or screen change detected.'
+          : isKeyboardActivity ? 'Restricted keyboard or mouse interaction detected.'
+            : 'Proctoring rule violation detected.';
 
     setWarningMessage(`⚠️ ${baseMessage}\n${details}`);
     setShowWarning(true);
@@ -242,7 +242,7 @@ const CodingChallengePage = () => {
             {problem.difficulty}
           </span>
         </div>
-        
+
         {/* Proctoring Indicators */}
         <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-card border border-border">
           <div className="flex items-center gap-1.5" title="Camera Status">
@@ -290,11 +290,10 @@ const CodingChallengePage = () => {
         <ResizablePanel defaultSize={40} minSize={25}>
           <div className="h-full overflow-y-auto p-6">
             <h2 className="text-lg font-semibold mb-2">{problem.title}</h2>
-            <span className={`text-xs font-medium capitalize px-2 py-0.5 rounded-full border ${
-              problem.difficulty === 'easy' ? 'border-success/20 bg-success/10 text-success' :
-              problem.difficulty === 'medium' ? 'border-warning/20 bg-warning/10 text-warning' :
-              'border-danger/20 bg-destructive/10 text-danger'
-            }`}>{problem.difficulty}</span>
+            <span className={`text-xs font-medium capitalize px-2 py-0.5 rounded-full border ${problem.difficulty === 'easy' ? 'border-success/20 bg-success/10 text-success' :
+                problem.difficulty === 'medium' ? 'border-warning/20 bg-warning/10 text-warning' :
+                  'border-danger/20 bg-destructive/10 text-danger'
+              }`}>{problem.difficulty}</span>
 
             <div className="mt-4 prose prose-sm max-w-none">
               <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{problem.description}</div>
@@ -391,9 +390,8 @@ const CodingChallengePage = () => {
                           {consoleOutput?.results && (
                             <div className="space-y-2">
                               <div className="flex items-center gap-2 mb-3">
-                                <span className={`text-sm font-medium ${
-                                  consoleOutput.overall_status === 'accepted' ? 'text-success' : 'text-danger'
-                                }`}>
+                                <span className={`text-sm font-medium ${consoleOutput.overall_status === 'accepted' ? 'text-success' : 'text-danger'
+                                  }`}>
                                   {consoleOutput.overall_status === 'accepted' ? 'Accepted' : consoleOutput.overall_status?.replace('_', ' ')}
                                 </span>
                                 <span className="text-xs text-muted-foreground">
@@ -406,9 +404,8 @@ const CodingChallengePage = () => {
                                 )}
                               </div>
                               {consoleOutput.results.map((r: any, i: number) => (
-                                <div key={i} className={`border rounded-lg p-2 ${
-                                  r.passed ? 'border-success/30 bg-success/5' : 'border-danger/30 bg-destructive/5'
-                                }`}>
+                                <div key={i} className={`border rounded-lg p-2 ${r.passed ? 'border-success/30 bg-success/5' : 'border-danger/30 bg-destructive/5'
+                                  }`}>
                                   <div className="flex items-center gap-2 mb-1">
                                     {r.passed ? <CheckCircle2 className="w-3.5 h-3.5 text-success" /> : <XCircle className="w-3.5 h-3.5 text-danger" />}
                                     <span className="text-xs font-medium text-foreground">
@@ -477,10 +474,9 @@ const CodingChallengePage = () => {
       {/* Webcam preview (small floating) */}
       <div className="fixed bottom-12 right-4 z-40 pointer-events-none">
         <div className="w-28 h-20 rounded-md border border-border overflow-hidden bg-muted shadow-sm pointer-events-auto">
-          <video ref={videoRef} className="w-full h-full object-cover" style={{ transform: 'scaleX(-1)' }} muted playsInline />
-          <span className={`absolute bottom-0.5 left-0.5 text-[9px] px-1 rounded font-medium ${
-            faceCount === 1 ? 'bg-success/90 text-success-foreground' : 'bg-danger/90 text-danger-foreground'
-          }`}>
+          <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" style={{ transform: 'scaleX(-1)' }} muted />
+          <span className={`absolute bottom-0.5 left-0.5 text-[9px] px-1 rounded font-medium ${faceCount === 1 ? 'bg-success/90 text-success-foreground' : 'bg-danger/90 text-danger-foreground'
+            }`}>
             {faceCount === 0 ? 'No Face' : faceCount === 1 ? '✓ Face OK' : `${faceCount} Faces`}
           </span>
           <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />

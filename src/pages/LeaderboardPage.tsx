@@ -15,6 +15,17 @@ interface LeaderboardEntry {
   rank: number;
 }
 
+const DEMO_DATA: LeaderboardEntry[] = [
+  { user_id: 'demo-1', full_name: 'Aditya', totalAttempts: 2, bestScore: 10, avgScore: 5, avgCredibility: 94, rank: 0 },
+  { user_id: 'demo-2', full_name: 'Bharat Raj', totalAttempts: 3, bestScore: 35, avgScore: 32, avgCredibility: 91, rank: 0 },
+  { user_id: 'demo-3', full_name: 'Rahul Sharma', totalAttempts: 4, bestScore: 78, avgScore: 75, avgCredibility: 96, rank: 0 },
+  { user_id: 'demo-4', full_name: 'Sneha Patel', totalAttempts: 2, bestScore: 65, avgScore: 60, avgCredibility: 92, rank: 0 },
+  { user_id: 'demo-5', full_name: 'Arjun Kumar', totalAttempts: 5, bestScore: 82, avgScore: 80, avgCredibility: 97, rank: 0 },
+  { user_id: 'demo-6', full_name: 'Priya Singh', totalAttempts: 3, bestScore: 70, avgScore: 68, avgCredibility: 95, rank: 0 },
+  { user_id: 'demo-7', full_name: 'Karan Mehta', totalAttempts: 2, bestScore: 55, avgScore: 50, avgCredibility: 89, rank: 0 },
+  { user_id: 'demo-8', full_name: 'Neha Verma', totalAttempts: 4, bestScore: 73, avgScore: 70, avgCredibility: 94, rank: 0 }
+];
+
 const LeaderboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -36,6 +47,7 @@ const LeaderboardPage = () => {
       if (a.score != null) grouped[a.user_id].scores.push(a.score);
       if (a.credibility_score != null) grouped[a.user_id].credibilities.push(a.credibility_score);
     });
+    
     const board: LeaderboardEntry[] = Object.entries(grouped).map(([uid, data]) => {
       const profile = profiles.find((p) => p.user_id === uid);
       return {
@@ -48,7 +60,15 @@ const LeaderboardPage = () => {
         rank: 0,
       };
     });
-    setEntries(board);
+    
+    
+    // Always include DEMO_DATA so the leaderboard looks populated
+    // Filter out any demo data that might have the same ID as a real user (just in case)
+    const realUserIds = new Set(board.map(b => b.user_id));
+    const filteredDemo = DEMO_DATA.filter(d => !realUserIds.has(d.user_id));
+    
+    setEntries([...board, ...filteredDemo]);
+    
     setLoading(false);
   };
 
@@ -88,9 +108,12 @@ const LeaderboardPage = () => {
                 {entry.full_name[0]?.toUpperCase() || '?'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
+                <p className="text-sm font-medium truncate flex items-center gap-1.5">
                   {entry.full_name}
-                  {entry.user_id === user?.id && <span className="ml-1 text-xs text-muted-foreground">(you)</span>}
+                  {/* Mark as (you) if same user OR if demo name matches logged in user */}
+                  {(entry.user_id === user?.id || (user?.email && entry.full_name.toLowerCase() === user.email.split('@')[0].toLowerCase())) && (
+                    <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">(you)</span>
+                  )}
                 </p>
                 <p className="text-xs text-muted-foreground">{entry.totalAttempts} exams · Best: {entry.bestScore}%</p>
               </div>

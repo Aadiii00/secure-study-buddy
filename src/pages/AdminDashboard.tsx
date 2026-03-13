@@ -179,9 +179,8 @@ const AdminDashboard = () => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                activeTab === tab.key ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
+              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === tab.key ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
@@ -235,11 +234,10 @@ const AdminDashboard = () => {
               {violations.slice(0, 20).map((v) => (
                 <div key={v.id} className="flex items-center gap-3 px-3 py-2 text-sm">
                   <span className="text-xs text-muted-foreground w-16 shrink-0">{new Date(v.created_at).toLocaleTimeString()}</span>
-                  <span className={`text-xs px-1.5 py-0.5 rounded ${
-                    v.severity === 'critical' ? 'bg-destructive/10 text-danger' :
-                    v.severity === 'high' ? 'bg-warning/10 text-warning' :
-                    'bg-muted text-muted-foreground'
-                  }`}>{v.severity}</span>
+                  <span className={`text-xs px-1.5 py-0.5 rounded ${v.severity === 'critical' ? 'bg-destructive/10 text-danger' :
+                      v.severity === 'high' ? 'bg-warning/10 text-warning' :
+                        'bg-muted text-muted-foreground'
+                    }`}>{v.severity}</span>
                   <span className="text-sm">{v.type}</span>
                   <span className="text-muted-foreground text-xs truncate">{v.details}</span>
                 </div>
@@ -260,11 +258,11 @@ const AdminDashboard = () => {
               <span className="text-sm font-medium">Live Proctoring</span>
               <span className="text-xs text-muted-foreground">({inProgressCount} active students)</span>
             </div>
-            
-            <LiveProctoringGrid 
-              activeAttempts={attempts.filter(a => a.status === 'in_progress')} 
-              profiles={profiles} 
-              liveViolations={liveViolations} 
+
+            <LiveProctoringGrid
+              activeAttempts={attempts.filter(a => a.status === 'in_progress')}
+              profiles={profiles}
+              liveViolations={liveViolations}
             />
 
             <div className="mt-8 pt-6 border-t border-border">
@@ -276,11 +274,10 @@ const AdminDashboard = () => {
                 {liveViolations.map((v: any, i) => (
                   <div key={v.id || i} className="flex items-center gap-3 px-3 py-2 text-sm">
                     <span className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleTimeString()}</span>
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${
-                      v.severity === 'critical' ? 'bg-destructive/10 text-danger' : 
-                      v.severity === 'high' ? 'bg-warning/10 text-warning' : 
-                      'bg-muted text-muted-foreground'
-                    }`}>{v.severity}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${v.severity === 'critical' ? 'bg-destructive/10 text-danger' :
+                        v.severity === 'high' ? 'bg-warning/10 text-warning' :
+                          'bg-muted text-muted-foreground'
+                      }`}>{v.severity}</span>
                     <span className="font-medium">{v.type}</span>
                     <span className="text-muted-foreground truncate">{v.details}</span>
                   </div>
@@ -297,9 +294,8 @@ const AdminDashboard = () => {
               <Filter className="w-4 h-4 text-muted-foreground" />
               {['all', 'low', 'medium', 'high'].map((level) => (
                 <button key={level} onClick={() => setRiskFilter(level)}
-                  className={`px-3 py-1 rounded text-sm transition-colors ${
-                    riskFilter === level ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'
-                  }`}>{level.charAt(0).toUpperCase() + level.slice(1)}</button>
+                  className={`px-3 py-1 rounded text-sm transition-colors ${riskFilter === level ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'
+                    }`}>{level.charAt(0).toUpperCase() + level.slice(1)}</button>
               ))}
               <span className="ml-auto text-xs text-muted-foreground">{filteredAttempts.length} results</span>
             </div>
@@ -322,11 +318,10 @@ const AdminDashboard = () => {
                           <p className="text-xs text-muted-foreground">Cred: {attempt.credibility_score ?? '—'}</p>
                         </div>
                         {attempt.risk_level && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                            attempt.risk_level === 'low' ? 'border-success/30 text-success' :
-                            attempt.risk_level === 'medium' ? 'border-warning/30 text-warning' :
-                            'border-danger/30 text-danger'
-                          }`}>{attempt.risk_level}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full border ${attempt.risk_level === 'low' ? 'border-success/30 text-success' :
+                              attempt.risk_level === 'medium' ? 'border-warning/30 text-warning' :
+                                'border-danger/30 text-danger'
+                            }`}>{attempt.risk_level}</span>
                         )}
                         <Button size="sm" variant="outline" onClick={() => viewAttemptDetails(attempt.id)}>
                           <Eye className="w-3.5 h-3.5" />
@@ -358,9 +353,8 @@ const AdminDashboard = () => {
                             {violations.filter((v) => v.attempt_id === attempt.id).map((v) => (
                               <div key={v.id} className="flex items-center gap-2 text-xs py-1">
                                 <span className="text-muted-foreground w-16">{new Date(v.created_at).toLocaleTimeString()}</span>
-                                <span className={`px-1 py-0.5 rounded ${
-                                  v.severity === 'critical' ? 'bg-destructive/10 text-danger' : v.severity === 'high' ? 'bg-warning/10 text-warning' : 'bg-muted text-muted-foreground'
-                                }`}>{v.severity}</span>
+                                <span className={`px-1 py-0.5 rounded ${v.severity === 'critical' ? 'bg-destructive/10 text-danger' : v.severity === 'high' ? 'bg-warning/10 text-warning' : 'bg-muted text-muted-foreground'
+                                  }`}>{v.severity}</span>
                                 <span>{v.type}: {v.details}</span>
                               </div>
                             ))}
@@ -392,9 +386,8 @@ const AdminDashboard = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => toggleExamActive(exam.id, exam.is_active)}
-                    className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
-                      exam.is_active ? 'text-success' : 'text-muted-foreground'
-                    }`}>
+                    className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${exam.is_active ? 'text-success' : 'text-muted-foreground'
+                      }`}>
                     {exam.is_active ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
                     {exam.is_active ? 'Active' : 'Inactive'}
                   </button>
