@@ -55,7 +55,9 @@ export type ViolationType =
   | 'multiple_faces'
   | 'face_not_centered'
   | 'camera_disabled'
-  | 'window_resize';
+  | 'window_resize'
+  | 'internet_disconnect'
+  | 'keyboard_inactivity';
 
 export interface ProctoringSnapshot {
   id: string;

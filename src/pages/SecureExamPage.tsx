@@ -34,6 +34,7 @@ const SecureExamPage = () => {
   const [warningMessage, setWarningMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [violationCounter, setViolationCounter] = useState(0);
+  const [strictViolationCount, setStrictViolationCount] = useState(0);
   const [examReady, setExamReady] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [consoleOpen, setConsoleOpen] = useState(false);
@@ -50,6 +51,7 @@ const SecureExamPage = () => {
   // Face detection with 5s grace period
   const handleFaceAnomaly = useCallback((type: 'no_face' | 'multiple_faces' | 'face_not_centered') => {
     setViolationCounter((prev) => prev + 1);
+    setStrictViolationCount((prev) => prev + 1);
     const messages = { no_face: 'No face detected for 5+ seconds', multiple_faces: 'Multiple faces detected', face_not_centered: 'Face not centered' };
     setWarningMessage(`⚠️ ${messages[type]}`);
     setShowWarning(true);
@@ -65,7 +67,10 @@ const SecureExamPage = () => {
   // Violation handler for proctor events
   const handleViolation = useCallback((type: ViolationType, details: string) => {
     setViolationCounter((prev) => prev + 1);
-    if (['tab_switch', 'devtools_open', 'fullscreen_exit', 'camera_disabled'].includes(type)) {
+    if (['internet_disconnect', 'window_blur', 'keyboard_inactivity', 'camera_disabled'].includes(type as string)) {
+      setStrictViolationCount((prev) => prev + 1);
+    }
+    if (['tab_switch', 'devtools_open', 'fullscreen_exit', 'camera_disabled', 'internet_disconnect', 'keyboard_inactivity', 'window_blur'].includes(type as string)) {
       setWarningMessage(`⚠️ ${details}`);
       setShowWarning(true);
     }
@@ -73,9 +78,15 @@ const SecureExamPage = () => {
 
   const handleAutoSubmit = useCallback(async () => {
     if (submitted) return;
-    toast.error('Auto-submitted due to violations.');
+    toast.error('Auto-submitted due to strict violations.');
     await submitExam('auto_submitted');
   }, [submitted]);
+
+  useEffect(() => {
+    if (strictViolationCount >= 3) {
+      handleAutoSubmit();
+    }
+  }, [strictViolationCount, handleAutoSubmit]);
 
   // Proctor events
   const { tabSwitchCount, timeOutside } = useProctorEvents({

@@ -73,6 +73,22 @@ export function useProctorEvents({
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') { e.preventDefault(); handleViolation('devtools_open', 'Ctrl+Shift+I', 'critical'); }
     };
 
+    let inactivityTimer: NodeJS.Timeout;
+    const resetInactivityTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        handleViolation('keyboard_inactivity', 'No keyboard or mouse activity for 30 seconds', 'high');
+      }, 30000);
+    };
+
+    const handleActivity = () => {
+      resetInactivityTimer();
+    };
+
+    const handleOffline = () => {
+      handleViolation('internet_disconnect', 'Internet connection lost', 'critical');
+    };
+
     const handleContextMenu = (e: Event) => { e.preventDefault(); handleViolation('right_click', 'Right-click', 'low'); };
     const handleSelectStart = (e: Event) => { e.preventDefault(); };
     const handleCopy = (e: Event) => { e.preventDefault(); handleViolation('copy_attempt', 'Copy event', 'high'); };
@@ -99,6 +115,14 @@ export function useProctorEvents({
     window.addEventListener('resize', handleResize);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
+    window.addEventListener('offline', handleOffline);
+    document.addEventListener('mousemove', handleActivity);
+    document.addEventListener('keydown', handleActivity);
+    document.addEventListener('mousedown', handleActivity);
+    document.addEventListener('scroll', handleActivity);
+    
+    resetInactivityTimer();
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleBlur);
@@ -110,6 +134,13 @@ export function useProctorEvents({
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('beforeunload', handleBeforeUnload);
+
+      window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('mousemove', handleActivity);
+      document.removeEventListener('keydown', handleActivity);
+      document.removeEventListener('mousedown', handleActivity);
+      document.removeEventListener('scroll', handleActivity);
+      clearTimeout(inactivityTimer);
     };
   }, [handleViolation, maxTabSwitches]);
 
