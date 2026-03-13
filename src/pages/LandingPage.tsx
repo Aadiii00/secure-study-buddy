@@ -86,7 +86,7 @@ const LandingPage = () => {
           className="grid grid-cols-3 gap-6 mt-16 max-w-lg">
           
           {[
-          { value: '15s', label: 'Detection interval' },
+          { value: '5s', label: 'Detection interval' },
           { value: '0–100', label: 'Credibility score' },
           { value: '6+', label: 'Violation types' }].
           map((stat, i) =>
