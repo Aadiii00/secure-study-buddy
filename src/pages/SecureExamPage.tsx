@@ -53,7 +53,7 @@ const SecureExamPage = () => {
   const handleFaceAnomaly = useCallback((type: 'no_face' | 'multiple_faces' | 'face_not_centered') => {
     setViolationCounter((prev) => prev + 1);
     const messages = {
-      no_face: 'Leaving camera view detected.',
+      no_face: 'Face not detected. Please ensure your face is clearly visible in the camera.',
       multiple_faces: 'Multiple faces detected in camera view.',
       face_not_centered: 'Camera obstruction or face not centered detected.',
     };
