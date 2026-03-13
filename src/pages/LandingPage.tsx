@@ -38,7 +38,7 @@ const LandingPage = () => {
             <div className="w-7 h-7 rounded bg-foreground flex items-center justify-center">
               <Shield className="w-4 h-4 text-background" />
             </div>
-            <span className="font-semibold text-foreground">​TraxnLabs</span>
+            <span className="font-semibold text-foreground">Tracxn<span className="text-red-500">Labs</span></span>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
             <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors">Features</button>
