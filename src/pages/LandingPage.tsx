@@ -9,7 +9,7 @@ const LandingPage = () => {
   const features = [
   { icon: Lock, title: 'Locked Environment', desc: 'Fullscreen lockdown with disabled copy, paste, right-click, and DevTools. No cheating loopholes.' },
   { icon: Eye, title: 'Tab Monitoring', desc: 'Real-time tracking of tab switches and window blur events with timestamped logs.' },
-  { icon: Camera, title: 'AI Proctoring', desc: 'Face detection every 15 seconds — no face, multiple faces, and off-center alerts using face-api.js.' },
+  { icon: Camera, title: 'AI Proctoring', desc: 'Face detection every 5 seconds — no face, multiple faces, and off-center alerts using face-api.js.' },
   { icon: BarChart3, title: 'Credibility Score', desc: 'Automated 0–100 score with weighted penalties and risk classification (low, medium, high).' },
   { icon: FileText, title: 'PDF Reports', desc: 'Exportable credibility certificates and violation timelines with screenshot evidence.' },
   { icon: Monitor, title: 'Admin Dashboard', desc: 'Live violation feeds, snapshots, risk filtering, charts, and full exam management.' }];

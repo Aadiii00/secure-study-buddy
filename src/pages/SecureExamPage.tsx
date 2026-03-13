@@ -134,7 +134,7 @@ const SecureExamPage = () => {
     const interval = setInterval(async () => {
       const result = await detectFaces();
       await captureEvidence(videoRef, canvasRef, attemptId, result.faceCount, result.isCentered, !!result.anomalyType);
-    }, 15000);
+    }, 5000);
     return () => { clearTimeout(initialTimeout); clearInterval(interval); };
   }, [examReady, cameraActive, modelsLoaded, attemptId, detectFaces]);
 

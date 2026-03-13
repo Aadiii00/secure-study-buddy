@@ -36,7 +36,7 @@ const ExamStartModal = ({ open, examTitle, duration, totalQuestions, onStart, on
 
   const rules = [
     'Fullscreen mode will be activated — exiting triggers a violation',
-    'Your webcam will capture snapshots every 15 seconds',
+    'Your webcam will capture snapshots every 5 seconds',
     'No face detected for 5+ seconds triggers a violation',
     'Multiple faces in frame triggers a violation',
     'Tab switching, copy/paste, and right-click are disabled',

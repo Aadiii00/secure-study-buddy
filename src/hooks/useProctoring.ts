@@ -14,7 +14,7 @@ interface UseProctoringOptions {
  */
 export function useProctoring({
   attemptId,
-  snapshotInterval = 15000,
+  snapshotInterval = 5000,
   onAnomaly,
   enabled = true,
 }: UseProctoringOptions) {
