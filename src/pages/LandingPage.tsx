@@ -38,7 +38,7 @@ const LandingPage = () => {
             <div className="w-7 h-7 rounded bg-foreground flex items-center justify-center">
               <Shield className="w-4 h-4 text-background" />
             </div>
-            <span className="font-semibold text-foreground">​TraxnLabs</span>
+            <span className="font-semibold text-foreground">Tracxn<span className="text-red-500">Labs</span></span>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
             <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-foreground transition-colors">Features</button>
@@ -62,10 +62,10 @@ const LandingPage = () => {
               AI-Powered Exam Proctoring
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] tracking-tight mb-5">
-              Secure online exams,<br />done right.
+              Unbreakable Exam Integrity,<br />Powered by AI.
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-lg leading-relaxed">
-              Real-time face detection, browser lockdown, and automated credibility scoring for institutions that value academic integrity.
+              TracxnLabs monitors behaviour, detects violations in real-time, and delivers a trust score that institutions can rely on.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button onClick={() => navigate('/auth')} size="lg">
@@ -184,7 +184,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-6 py-20">
           <div className="max-w-xl mx-auto text-center">
             <h2 className="text-2xl font-bold text-foreground mb-3">Ready to secure your exams?</h2>
-            <p className="text-muted-foreground mb-6">Join institutions using ExamGuard for integrity-first assessments.</p>
+            <p className="text-muted-foreground mb-6">Join institutions using TracxnLabs for integrity-first assessments.</p>
             <div className="flex flex-col items-start gap-2 mb-8 mx-auto w-fit text-sm text-muted-foreground">
               {['No credit card required', 'Free to get started', 'Full proctoring included'].map((item, i) =>
               <div key={i} className="flex items-center gap-2">
@@ -205,7 +205,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Shield className="w-3.5 h-3.5" />
-            <span>© 2026 ExamGuard</span>
+            <span>© 2026 Tracxn<span className="text-red-500">Labs</span></span>
           </div>
           <div className="flex gap-4">
             <span>Privacy</span>
