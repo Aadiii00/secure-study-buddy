@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import ViolationWarningModal from '@/components/exam/ViolationWarningModal';
+import ExamCompletionModal from '@/components/exam/ExamCompletionModal';
 
 const SecureExamPage = () => {
   const { examId } = useParams<{ examId: string }>();
@@ -39,6 +40,11 @@ const SecureExamPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [consoleOpen, setConsoleOpen] = useState(false);
   const [consoleTab, setConsoleTab] = useState<'status' | 'warnings' | 'info'>('status');
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [completionData, setCompletionData] = useState<{
+    score: number;
+    correctAnswers: number;
+  } | null>(null);
 
   // Webcam
   const { videoRef, cameraActive, startCamera } = useWebcam();
@@ -225,7 +231,15 @@ const SecureExamPage = () => {
     const score = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
     await supabase.from('exam_attempts').update({ ended_at: new Date().toISOString(), answers, score, status }).eq('id', attemptId);
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    toast.success(`Submitted! Score: ${score}%`);
+    
+    // Set completion data and show modal
+    setCompletionData({ score, correctAnswers: correct });
+    setShowCompletionModal(true);
+    toast.success(`Exam completed! Score: ${score}%`);
+  };
+
+  const handleViewResults = () => {
+    setShowCompletionModal(false);
     navigate(`/results/${attemptId}`);
   };
 
@@ -233,7 +247,7 @@ const SecureExamPage = () => {
   const isUrgent = timeLeft < 300;
   const answeredCount = Object.keys(answers).length;
 
-  if (submitted) return null;
+  if (submitted && !showCompletionModal) return null;
 
   const proctorStatus = violationCounter === 0 ? 'normal' : violationCounter <= 2 ? 'warning' : 'violation';
 
@@ -653,6 +667,17 @@ const SecureExamPage = () => {
       </div>
 
       <ViolationWarningModal open={showWarning} message={warningMessage} onClose={() => setShowWarning(false)} violationCount={violationCounter} />
+      
+      {completionData && (
+        <ExamCompletionModal
+          open={showCompletionModal}
+          examTitle={examTitle}
+          score={completionData.score}
+          totalQuestions={questions.length}
+          correctAnswers={completionData.correctAnswers}
+          onViewResults={handleViewResults}
+        />
+      )}
     </div>
   );
 };
