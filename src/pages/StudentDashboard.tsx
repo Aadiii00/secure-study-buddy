@@ -12,8 +12,16 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
   const [exams, setExams] = useState<any[]>([]);
   const [attempts, setAttempts] = useState<any[]>([]);
+  const [codingProblems, setCodingProblems] = useState<any[]>([]);
+  const [codingSubmissions, setCodingSubmissions] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [examToStart, setExamToStart] = useState<any>(null);
+
+  const difficultyColors: Record<string, string> = {
+    easy: 'text-success',
+    medium: 'text-warning',
+    hard: 'text-danger',
+  };
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
@@ -22,14 +30,24 @@ const StudentDashboard = () => {
   }, [user, role]);
 
   const fetchData = async () => {
-    const [{ data: examsData }, { data: attemptsData }, { data: profileData }] = await Promise.all([
+    const [
+      { data: examsData }, 
+      { data: attemptsData }, 
+      { data: profileData },
+      { data: problemsData },
+      { data: subsData }
+    ] = await Promise.all([
       supabase.from('exams').select('*').eq('is_active', true).order('created_at', { ascending: false }),
       supabase.from('exam_attempts').select('*, exams(title)').eq('user_id', user!.id).order('created_at', { ascending: false }),
       supabase.from('profiles').select('*').eq('user_id', user!.id).single(),
+      supabase.from('coding_problems').select('*').eq('is_active', true).order('created_at', { ascending: false }),
+      supabase.from('code_submissions').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
     ]);
     setExams(examsData || []);
     setAttempts(attemptsData || []);
     setProfile(profileData);
+    setCodingProblems(problemsData || []);
+    setCodingSubmissions(subsData || []);
   };
 
   const getExamStatus = (examId: string) => {
@@ -98,12 +116,12 @@ const StudentDashboard = () => {
             const isCompleted = examStatus === 'completed';
             
             return (
-              <div key={exam.id} className={`border rounded-lg p-5 relative ${
+              <div key={`exam-${exam.id}`} className={`border rounded-lg p-5 relative ${
                 isCompleted ? 'border-success/30 bg-success/5' : 'border-border'
               }`}>
                 {isCompleted && (
                   <div className="absolute top-3 right-3">
-                    <CheckCircle className="w-5 h-5 text-success" />
+                     <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                 )}
                 <h3 className="font-medium mb-1">{exam.title}</h3>
@@ -113,7 +131,7 @@ const StudentDashboard = () => {
                   <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {exam.total_questions} questions</span>
                 </div>
                 {isCompleted ? (
-                  <div className="flex items-center justify-between">
+                 <div className="flex items-center justify-between">
                     <span className="text-sm text-success font-medium">Completed</span>
                     <Button 
                       variant="outline" 
@@ -134,9 +152,53 @@ const StudentDashboard = () => {
               </div>
             );
           })}
-          {exams.length === 0 && (
+          
+          {codingProblems.map((problem) => {
+             const problemSubs = codingSubmissions.filter(s => s.problem_id === problem.id);
+             const isSolved = problemSubs.some(s => s.status === 'accepted');
+             
+             return (
+              <div key={`problem-${problem.id}`} className={`border rounded-lg p-5 relative ${
+                isSolved ? 'border-success/30 bg-success/5' : 'border-border'
+              }`}>
+                {isSolved && (
+                  <div className="absolute top-3 right-3">
+                     <CheckCircle className="w-5 h-5 text-success" />
+                  </div>
+                )}
+                <div className="flex items-center gap-2 mb-1">
+                  <Code2 className="w-4 h-4 text-primary" />
+                  <h3 className="font-medium">{problem.title}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{problem.description || 'No description.'}</p>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground mb-4">
+                  <span className="flex items-center gap-1 capitalize">
+                    Difficulty: <span className={difficultyColors[problem.difficulty]}>{problem.difficulty}</span>
+                  </span>
+                </div>
+                {isSolved ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-success font-medium">Solved</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => navigate(`/coding/${problem.id}`)}
+                    >
+                      View Code
+                    </Button>
+                  </div>
+                ) : (
+                  <Button onClick={() => navigate(`/coding/${problem.id}`)} className="w-full" size="sm" variant="secondary">
+                     <Play className="w-4 h-4 mr-1" /> Solve Challenge
+                  </Button>
+                )}
+              </div>
+             );
+          })}
+          
+          {exams.length === 0 && codingProblems.length === 0 && (
             <div className="border border-border rounded-lg p-8 text-center col-span-2 text-muted-foreground">
-              No exams available right now.
+              No exams or coding challenges available right now.
             </div>
           )}
         </div>

@@ -3,11 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import Editor from '@monaco-editor/react';
-import { Play, Send, ArrowLeft, Clock, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, History } from 'lucide-react';
+import { Play, Send, ArrowLeft, Clock, CheckCircle2, XCircle, Loader2, ChevronDown, ChevronUp, History, Camera, Eye, Shield, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { useWebcam } from '@/proctoring/useWebcam';
+import { useFaceDetection } from '@/proctoring/useFaceDetection';
+import { useProctorEvents } from '@/proctoring/useProctorEvents';
+import { ViolationType } from '@/types/exam';
+import ViolationWarningModal from '@/components/exam/ViolationWarningModal';
 
 const LANGUAGES = [
   { value: 'python', label: 'Python', monacoId: 'python' },
@@ -44,6 +49,96 @@ const CodingChallengePage = () => {
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [activeConsoleTab, setActiveConsoleTab] = useState<'results' | 'history'>('results');
+
+  // Proctoring States
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
+  const [violationCounter, setViolationCounter] = useState(0);
+  const dummyAttemptId = problemId ? `coding-${problemId}` : '';
+
+  // Webcam
+  const { videoRef, cameraActive, startCamera } = useWebcam();
+
+  // Face detection with 5s grace period
+  const handleFaceAnomaly = (type: 'no_face' | 'multiple_faces' | 'face_not_centered') => {
+    setViolationCounter((prev) => prev + 1);
+    const messages = {
+      no_face: 'Face not detected. Please ensure your face is clearly visible in the camera.',
+      multiple_faces: 'Multiple faces detected in camera view.',
+      face_not_centered: 'Camera obstruction or face not centered detected.',
+    };
+    setWarningMessage(`⚠️ ${messages[type]}`);
+    setShowWarning(true);
+  };
+
+  const { modelsLoaded, faceCount, detectFaces } = useFaceDetection({
+    videoRef,
+    enabled: !!dummyAttemptId,
+    noFaceGracePeriod: 5000,
+    onAnomaly: handleFaceAnomaly,
+  });
+
+  // Violation handler for proctor events
+  const handleViolation = (type: ViolationType, details: string) => {
+    setViolationCounter((prev) => prev + 1);
+    const isLeavingCameraView = ['no_face', 'multiple_faces', 'face_not_centered', 'camera_disabled'].includes(type);
+    const isWindowFocusChange = ['tab_switch', 'window_blur', 'fullscreen_exit', 'window_resize'].includes(type);
+    const isKeyboardActivity = ['copy_attempt', 'paste_attempt', 'cut_attempt', 'keyboard_shortcut', 'devtools_open', 'print_screen', 'right_click'].includes(type);
+
+    const baseMessage =
+      isLeavingCameraView ? 'Leaving camera view or camera obstruction detected.'
+      : isWindowFocusChange ? 'Window focus or screen change detected.'
+      : isKeyboardActivity ? 'Restricted keyboard or mouse interaction detected.'
+      : 'Proctoring rule violation detected.';
+
+    setWarningMessage(`⚠️ ${baseMessage}\n${details}`);
+    setShowWarning(true);
+  };
+
+  useProctorEvents({
+    attemptId: dummyAttemptId,
+    onViolation: handleViolation,
+    maxTabSwitches: 3,
+    maxCriticalViolations: 3,
+  });
+
+  // Start camera on mount
+  useEffect(() => {
+    startCamera();
+  }, []);
+
+  // Periodic face detection (every 5s)
+  useEffect(() => {
+    if (!cameraActive || !modelsLoaded) return;
+    const interval = setInterval(async () => {
+      await detectFaces();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [cameraActive, modelsLoaded, detectFaces]);
+
+  // Block clipboard/drag/keys
+  useEffect(() => {
+    const blockClipboard = (e: ClipboardEvent) => { e.preventDefault(); e.stopPropagation(); if (e.clipboardData) e.clipboardData.setData('text/plain', ''); };
+    const blockDrag = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); };
+    const blockKeys = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && ['p', 's', 'a', 'u', 'r'].includes(e.key)) e.preventDefault();
+      if (e.key === 'F5') e.preventDefault();
+    };
+    document.addEventListener('copy', blockClipboard, true);
+    document.addEventListener('cut', blockClipboard, true);
+    document.addEventListener('paste', blockClipboard, true);
+    document.addEventListener('dragstart', blockDrag, true);
+    document.addEventListener('drop', blockDrag, true);
+    document.addEventListener('keydown', blockKeys, true);
+    return () => {
+      document.removeEventListener('copy', blockClipboard, true);
+      document.removeEventListener('cut', blockClipboard, true);
+      document.removeEventListener('paste', blockClipboard, true);
+      document.removeEventListener('dragstart', blockDrag, true);
+      document.removeEventListener('drop', blockDrag, true);
+      document.removeEventListener('keydown', blockKeys, true);
+    };
+  }, []);
 
   useEffect(() => {
     if (!user || !problemId) return;
@@ -147,6 +242,26 @@ const CodingChallengePage = () => {
             {problem.difficulty}
           </span>
         </div>
+        
+        {/* Proctoring Indicators */}
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-card border border-border">
+          <div className="flex items-center gap-1.5" title="Camera Status">
+            <Camera className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className={`w-2 h-2 rounded-full ${cameraActive ? 'bg-success' : 'bg-danger'}`} />
+          </div>
+          <div className="flex items-center gap-1.5" title="Face Detection">
+            <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className={`w-2 h-2 rounded-full ${faceCount === 1 ? 'bg-success' : faceCount === 0 ? 'bg-warning' : 'bg-danger'}`} />
+          </div>
+          <div className="flex items-center gap-1.5" title="Violations">
+            <AlertTriangle className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className={`w-2 h-2 rounded-full ${violationCounter === 0 ? 'bg-success' : violationCounter <= 2 ? 'bg-warning' : 'bg-danger'}`} />
+            {violationCounter > 0 && (
+              <span className="text-[10px] font-medium text-danger">{violationCounter}</span>
+            )}
+          </div>
+        </div>
+
         <div className="flex items-center gap-2">
           <Select value={language} onValueChange={handleLanguageChange}>
             <SelectTrigger className="w-[140px] h-8 text-xs">
@@ -358,6 +473,21 @@ const CodingChallengePage = () => {
           )}
         </ResizablePanel>
       </ResizablePanelGroup>
+
+      {/* Webcam preview (small floating) */}
+      <div className="fixed bottom-12 right-4 z-40 pointer-events-none">
+        <div className="w-28 h-20 rounded-md border border-border overflow-hidden bg-muted shadow-sm pointer-events-auto">
+          <video ref={videoRef} className="w-full h-full object-cover" style={{ transform: 'scaleX(-1)' }} muted playsInline />
+          <span className={`absolute bottom-0.5 left-0.5 text-[9px] px-1 rounded font-medium ${
+            faceCount === 1 ? 'bg-success/90 text-success-foreground' : 'bg-danger/90 text-danger-foreground'
+          }`}>
+            {faceCount === 0 ? 'No Face' : faceCount === 1 ? '✓ Face OK' : `${faceCount} Faces`}
+          </span>
+          <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
+        </div>
+      </div>
+
+      <ViolationWarningModal open={showWarning} message={warningMessage} onClose={() => setShowWarning(false)} violationCount={violationCounter} />
     </div>
   );
 };
