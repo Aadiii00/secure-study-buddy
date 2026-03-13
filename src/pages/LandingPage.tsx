@@ -62,10 +62,10 @@ const LandingPage = () => {
               AI-Powered Exam Proctoring
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1] tracking-tight mb-5">
-              Secure online exams,<br />done right.
+              Unbreakable Exam Integrity,<br />Powered by AI.
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-lg leading-relaxed">
-              Real-time face detection, browser lockdown, and automated credibility scoring for institutions that value academic integrity.
+              TracxnLabs monitors behaviour, detects violations in real-time, and delivers a trust score that institutions can rely on.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button onClick={() => navigate('/auth')} size="lg">
