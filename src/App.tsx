@@ -59,7 +59,7 @@ const App = () => (
             <Route path="/~oauth" element={<OAuthCallbackPage />} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
-            <Route path="/results/:attemptId" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
+            <Route path="/exam/:examId" element={<ProtectedRoute><SecureExamPage /></ProtectedRoute>} />
             <Route path="/coding" element={<ProtectedRoute><CodingProblemsPage /></ProtectedRoute>} />
             <Route path="/coding/:problemId" element={<ProtectedRoute><CodingChallengePage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
