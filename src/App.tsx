@@ -57,7 +57,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
             <Route path="/~oauth" element={<OAuthCallbackPage />} />
-            <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/exam/:examId" element={<ProtectedRoute><SecureExamPage /></ProtectedRoute>} />
             <Route path="/results/:attemptId" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
             <Route path="/coding" element={<ProtectedRoute><CodingProblemsPage /></ProtectedRoute>} />
