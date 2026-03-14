@@ -426,6 +426,95 @@ const AdminDashboard = () => {
                     <Button variant="outline" size="sm" onClick={() => document.getElementById('pdf-upload')?.click()} type="button">
                       <BookOpen className="w-4 h-4 mr-2" /> Auto-Generate from PDF
                     </Button>
+                    <Button variant="outline" size="sm" onClick={() => document.getElementById('json-upload')?.click()} type="button" className="ml-2">
+                      <Download className="w-4 h-4 mr-2" /> Import JSON
+                    </Button>
+                    <input
+                      id="json-upload"
+                      type="file"
+                      accept=".json"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            try {
+                              const json = JSON.parse(event.target?.result as string);
+                              
+                              let jsonArray = null;
+                              if (Array.isArray(json)) {
+                                jsonArray = json;
+                              } else if (json && typeof json === 'object') {
+                                if (Array.isArray(json.questions)) jsonArray = json.questions;
+                                else if (Array.isArray(json.data)) jsonArray = json.data;
+                                else {
+                                  for (const key in json) {
+                                    if (Array.isArray(json[key])) {
+                                      jsonArray = json[key];
+                                      break;
+                                    }
+                                  }
+                                }
+                              }
+
+                              if (jsonArray && Array.isArray(jsonArray)) {
+                                const newQs = jsonArray.map((q: any) => {
+                                  const text = q.question_text || q.question || q.text || q.title || '';
+                                  
+                                  let opts = q.options || q.choices || q.answers || [];
+                                  if (!Array.isArray(opts)) opts = [];
+                                  if (opts.length < 4) {
+                                    opts = [...opts, ...Array(4 - opts.length).fill('')];
+                                  } else if (opts.length > 4) {
+                                    opts = opts.slice(0, 4);
+                                  }
+
+                                  let correct = 0;
+                                  if (typeof q.correct_option === 'number') correct = q.correct_option;
+                                  else if (typeof q.answer === 'number') correct = q.answer;
+                                  else if (typeof q.correct_answer === 'number') correct = q.correct_answer;
+                                  else if (typeof q.correct === 'number') correct = q.correct;
+                                  else {
+                                    const answerStr = String(q.correct_option || q.answer || q.correct_answer || '').trim();
+                                    const upper = answerStr.toUpperCase();
+                                    if (upper === 'A') correct = 0;
+                                    else if (upper === 'B') correct = 1;
+                                    else if (upper === 'C') correct = 2;
+                                    else if (upper === 'D') correct = 3;
+                                    else {
+                                      const idx = opts.findIndex((o: string) => o === answerStr);
+                                      if (idx !== -1) correct = idx;
+                                    }
+                                  }
+
+                                  return {
+                                    question_text: text,
+                                    options: opts as string[],
+                                    correct_option: correct
+                                  };
+                                });
+                                
+                                if (newQuestions.length === 1 && !newQuestions[0].question_text) {
+                                  setNewQuestions(newQs);
+                                } else {
+                                  setNewQuestions([...newQuestions, ...newQs]);
+                                }
+                                toast.success(`Successfully imported ${newQs.length} questions from JSON.`);
+                              } else {
+                                console.error('Parsed JSON is not an array:', jsonArray, json);
+                                toast.error('Invalid JSON format. Expected an array of questions. Check console for details.');
+                              }
+                            } catch (err) {
+                              console.error('JSON Parse Error:', err);
+                              toast.error('Failed to parse JSON file. Check console for details.');
+                            }
+                          };
+                          reader.readAsText(file);
+                          e.target.value = '';
+                        }
+                      }}
+                    />
                     <input
                       id="pdf-upload"
                       type="file"
