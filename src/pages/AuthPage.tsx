@@ -46,8 +46,15 @@ const AuthPage = () => {
   const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
 
-  const { signIn, signUp, resendVerification, signOut } = useAuth();
+  const { user, signIn, signUp, resendVerification, signOut } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect to dashboard if already signed in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const enforceRole = async (expectedRole: 'admin' | 'student') => {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
