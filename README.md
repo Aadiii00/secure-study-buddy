@@ -1,73 +1,251 @@
-# Welcome to your Lovable project
+# 🚀 TracxnLabs
 
-## Project info
+### AI-Powered Secure Online Examination Platform
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+![React](https://img.shields.io/badge/React-18-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Supabase](https://img.shields.io/badge/Supabase-Backend-green)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-UI-blue)
+![Vite](https://img.shields.io/badge/Vite-Build-purple)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
-## How can I edit this code?
+**TracxnLabs** is an AI-powered online examination platform built to ensure **secure, fair, and scalable remote assessments**.
 
-There are several ways of editing your application.
+It combines **AI proctoring, coding challenges, automated evaluation, and credibility scoring** to prevent cheating and provide reliable exam monitoring.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+# 🧠 Problem Statement
 
-Changes made via Lovable will be committed automatically to this repo.
+Online exams are increasingly common, but most platforms lack **effective cheating prevention and monitoring systems**.
 
-**Use your preferred IDE**
+Common problems include:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+* Tab switching during exams
+* Students leaving the screen
+* Multiple people appearing in the camera
+* Lack of integrity scoring
+* Manual result evaluation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**TracxnLabs solves these problems using AI-based monitoring and automated exam evaluation.**
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 💡 Our Solution
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+TracxnLabs introduces a **secure exam ecosystem** that includes:
 
-# Step 3: Install the necessary dependencies.
-npm i
+✔ Real-time webcam monitoring
+✔ Browser activity detection
+✔ Credibility scoring system
+✔ Coding challenge evaluation
+✔ Admin dashboard for monitoring
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+This ensures **exam integrity while maintaining a smooth student experience**.
+
+---
+
+# 🔐 Key Features
+
+## 👨‍🎓 Student Portal
+
+* Secure authentication
+* Online coding exam interface
+* Real-time exam environment
+* Automatic code evaluation
+* Leaderboard and result tracking
+
+---
+
+## 🛡️ AI Proctoring System
+
+The platform actively monitors students during exams.
+
+Detection capabilities include:
+
+* 📷 Webcam monitoring
+* 👤 Face detection
+* 🔄 Tab switching detection
+* 🖥 Fullscreen exit detection
+* 👥 Multiple face detection
+* 📸 Evidence screenshot capture
+
+---
+
+## 🧠 Credibility Engine
+
+A unique **Credibility Score System** calculates the integrity level of a student.
+
+| Violation        | Score Impact |
+| ---------------- | ------------ |
+| Tab Switching    | -20          |
+| Face Not Visible | -30          |
+| Multiple Faces   | -50          |
+| Camera Disabled  | -40          |
+
+This allows administrators to quickly identify suspicious exam sessions.
+
+---
+
+# 👨‍💼 Admin Dashboard
+
+Admins can:
+
+* Monitor live exam activity
+* View violations and evidence
+* Analyze exam performance
+* Review coding submissions
+* Access leaderboard analytics
+
+---
+
+# 🏗️ System Architecture
+
+```
+Student Browser
+      │
+      ▼
+React + Vite Frontend
+      │
+      ▼
+Supabase Backend
+      │
+      ├── Authentication
+      ├── Database (PostgreSQL)
+      ├── Edge Functions
+      │        │
+      │        ├── Code Evaluation
+      │        └── Result Processing
+      │
+      ▼
+Admin Dashboard
+```
+
+---
+
+# ⚙️ Tech Stack
+
+## Frontend
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* shadcn-ui
+
+## Backend
+
+* Supabase
+* PostgreSQL Database
+* Supabase Edge Functions
+
+## Security Monitoring
+
+* Browser Activity Tracking
+* Webcam API
+* Face Detection
+
+---
+
+# 📂 Project Structure
+
+```
+tracxnlabs
+│
+├── src
+│   ├── components        # Reusable UI components
+│   ├── pages             # Application pages
+│   ├── hooks             # Custom React hooks
+│   ├── proctoring        # AI monitoring logic
+│   ├── integrations      # Supabase integration
+│   ├── lib               # Credibility engine
+│   └── types             # TypeScript definitions
+│
+├── supabase
+│   ├── functions         # Backend serverless functions
+│   ├── migrations        # Database schema
+│   └── config.toml
+│
+├── index.html
+├── package.json
+└── tailwind.config.ts
+```
+
+---
+
+# ⚙️ Installation
+
+### Clone the repository
+
+```
+git clone https://github.com/YOUR_USERNAME/tracxnlabs.git
+```
+
+### Navigate to the project directory
+
+```
+cd tracxnlabs
+```
+
+### Install dependencies
+
+```
+npm install
+```
+
+### Start the development server
+
+```
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Application will run on:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+http://localhost:5173
+```
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+# 🔄 System Workflow
 
-This project is built with:
+1️⃣ Student logs into TracxnLabs
+2️⃣ Student starts an online exam
+3️⃣ Webcam monitoring begins automatically
+4️⃣ Browser activity is monitored
+5️⃣ Student submits coding solutions
+6️⃣ Code is evaluated using backend functions
+7️⃣ Results and violations are stored in database
+8️⃣ Admin dashboard displays analytics and scores
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+# 📊 Example Use Cases
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+* Online coding interviews
+* University remote exams
+* Technical skill assessments
+* Hackathon evaluation platforms
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+# 🚀 Future Improvements
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+* AI gaze tracking
+* Voice detection for cheating
+* AI-generated exam questions
+* Advanced plagiarism detection
+* Live proctoring dashboard
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+# 🏆 Hackathon Pitch
+
+**TracxnLabs** is an AI-powered remote exam platform designed to ensure fairness in online assessments.
+
+By combining **real-time proctoring, credibility scoring, and automated code evaluation**, the system detects suspicious activity and maintains exam integrity without requiring manual supervision.
+
+---
+
