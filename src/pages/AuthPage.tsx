@@ -410,7 +410,7 @@ const AuthPage = () => {
               </Button>
             </form>
 
-            <SocialButtons onSuccessRoute="/admin" />
+            <SocialButtons />
           </div>
         </div>
       </div>
